@@ -4,13 +4,13 @@ sys.path.append("../../src")
 import time
 import struct
 import serial
-from uservo import UartServoManager
+import fashionstar_uart_sdk as uservo
 import math
 import time
 
 class rrsrobot:
     def __init__(self):
-        self.SERVO_PORT_NAME =  'COM4'		# 舵机串口号
+        self.SERVO_PORT_NAME =  '/dev/ttyUSB0'		# 舵机串口号
         self.SERVO_BAUDRATE = 115200			# 舵机的波特率
         self.SERVO_HAS_MTURN_FUNC = False	# 舵机是否拥有多圈模式
 
@@ -19,45 +19,29 @@ class rrsrobot:
                             parity=serial.PARITY_NONE, stopbits=1,\
                             bytesize=8,timeout=0)
         # 初始化舵机管理器
-        self.uservo = UartServoManager(uart, is_debug=True)
+        self.control = uservo.UartServoManager(uart, is_debug=True)
 
         # 连杆长度数组L = [底部, 下连杆, 上连杆, 顶盘]
-        self.L = [0.04, 0.04, 0.065, 0.065]
+        self.L = [0.056, 0.070, 0.102, 0.090]
         #初期姿勢(theta, phi, h)
-        self.ini_pos = [0, 0, 0.0632]
-        self.h_max = 0.0732
-        self.h_min = 0.0532
+        self.ini_pos = [0, 0, 0.13]
+        self.h_max = 0.15
+        self.h_min = 0.10
         self.phi_max = 20
-
-
-    #ロボットの準備をするメソッド
-    def set_up(self):
-        #サーボのトルクをオン
-        self.s1.trq_set(1)
-        self.s2.trq_set(1)
-        self.s3.trq_set(1)
         
-    
-    #ロボットを片付けるメソッド
-    def clean_up(self):
-        #サーボのトルクをオフ
-        self.s1.trq_set(0)
-        self.s2.trq_set(0)
-        self.s3.trq_set(0)
-        #シリアルポートを片付け
-        self.port.close_sPort()
+        self.delay_time = 0
 
     # 逆运动学计算
     def kinema_inv(self, n, h):
         L = self.L
-        # #サーボ基準時の高さPmz導出(Pmzで+-反転)
-        # A = (L[0]+L[1])/h
-        # B = (h**2+L[2]**2-(L[0]+L[1])**2-L[3]**2)/(2*h)
-        # C = A**2+1
-        # D = 2*(A*B-(L[0]+L[1]))
-        # E = B**2+(L[0]+L[1])**2-L[2]**2
-        # Pmx = (-D+math.sqrt(D**2-4*C*E))/(2*C)
-        # Pmz = math.sqrt(L[2]**2-Pmx**2+2*(L[0]+L[1])*Pmx-(L[0]+L[1])**2)
+        #サーボ基準時の高さPmz導出(Pmzで+-反転)
+        A = (L[0]+L[1])/h
+        B = (h**2+L[2]**2-(L[0]+L[1])**2-L[3]**2)/(2*h)
+        C = A**2+1
+        D = 2*(A*B-(L[0]+L[1]))
+        E = B**2+(L[0]+L[1])**2-L[2]**2
+        Pmx = (-D+math.sqrt(D**2-4*C*E))/(2*C)
+        Pmz = math.sqrt(L[2]**2-Pmx**2+2*(L[0]+L[1])*Pmx-(L[0]+L[1])**2)
 
         # 0号舵机球形关节坐标推导
         x0 = (L[3]/(math.sqrt(n[0]**2 + n[2]**2)))*(n[2])
@@ -135,10 +119,11 @@ class rrsrobot:
         y = r*math.sin(math.radians(theta))
         n = [x, y, z]
         angles = self.kinema_inv(n, h)
-        uservo.set_servo_angle(0, angles[0], interval=0) # 设置舵机角度 极速模式
-        uservo.set_servo_angle(1, angles[1], interval=0) # 设置舵机角度 极速模式
-        uservo.set_servo_angle(2, angles[2], interval=0) # 设置舵机角度 极速模式
-        uservo.wait() # 等待舵机静止
+        print(angles)
+        self.control.set_servo_angle(0, max(min(angles[0],-10.0),-75.0), interval=self.delay_time) # 设置舵机角度 极速模式
+        self.control.set_servo_angle(1, max(min(angles[1],-10.0),-75.0), interval=self.delay_time) # 设置舵机角度 极速模式
+        self.control.set_servo_angle(2, max(min(angles[2],-10.0),-75.0), interval=self.delay_time) # 设置舵机角度 极速模式
+        #self.control.wait() # 等待舵机静止
         time.sleep(t)
     
     def Initialize_posture(self):
