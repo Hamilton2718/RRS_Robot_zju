@@ -4,12 +4,12 @@ import numpy as np
 import threading
 
 class Camera:
-    def __init__(self):
+    def __init__(self, width, height):
         self.picam2 = Picamera2()
-        self.height = 480
-        self.width = 480
+        self.width = width
+        self.height = height
         self.config = self.picam2.create_video_configuration(
-            main={"format": 'XRGB8888', "size": (self.height, self.width)},
+            main={"format": 'XRGB8888', "size": (self.width, self.height)},
             controls={
                 "FrameDurationLimits": (8333, 8333),
                 "ExposureTime": 8000
@@ -38,10 +38,10 @@ class Camera:
     def find_ball(self, image):
         image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(image_hsv, self.lower_pink, self.upper_pink)
-        contous, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-        if contous:
-            largest_contour = max(contous, key=cv2.contourArea)
+        if contours:
+            largest_contour = max(contours, key=cv2.contourArea)
             (x, y), radius = cv2.minEnclosingCircle(largest_contour)
             area = cv2.contourArea(largest_contour)
             if area > 200:
@@ -50,8 +50,8 @@ class Camera:
                 d = radius * 2
                 h = 10000 / d
 
-                x -= self.height / 2
-                y -= self.width / 2
+                x -= self.width / 2
+                y -= self.height / 2
                 return int(x), int(y), int(area)
         self.show_video(image)
         return -1, -1, 0

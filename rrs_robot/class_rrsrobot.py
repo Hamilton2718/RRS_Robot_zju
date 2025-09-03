@@ -22,12 +22,12 @@ class rrsrobot:
         self.control = uservo.UartServoManager(uart, is_debug=True)
 
         # 连杆长度数组L = [底部, 下连杆, 上连杆, 顶盘]
-        self.L = [0.056, 0.070, 0.102, 0.090]
+        self.L = [0.056, 0.070, 0.102, 0.1145]
         #初期姿勢(theta, phi, h)
-        self.ini_pos = [0, 0, 0.13]
-        self.h_max = 0.15
-        self.h_min = 0.10
-        self.phi_max = 20
+        self.ini_pos = [0, 0, 0.14]
+        self.h_max = 0.17
+        self.h_min = 0.125
+        self.phi_max = 10
         
         self.delay_time = 0
 
@@ -57,10 +57,9 @@ class rrsrobot:
         a0 = (-D+math.sqrt(D**2-4*C*E))/(2*C)
         b0 = 0
         c0 = math.sqrt(L[1]**2-a0**2+2*L[0]*a0-L[0]**2)
-        if ( z0 < h):
-            c0 = -c0
         R0 = [a0, b0, c0] # 旋转关节R0
         theta0 = -math.degrees(math.atan2(R0[2] , R0[0]-L[0])) # 舵机旋转角度theta0
+        #print(theta0,R0[2],R0[0])
 
         # 1号舵机球形关节坐标推导
         x1 = (L[3]/(math.sqrt(n[0]**2+3*n[1]**2+4*n[2]**2+2*math.sqrt(3)*n[0]*n[1])))*(-n[2])
@@ -76,8 +75,6 @@ class rrsrobot:
         a1 = (-D-math.sqrt(D**2-4*C*E))/(2*C)
         b1 = math.sqrt(3)*a1
         c1 = math.sqrt(L[1]**2-4*a1**2-4*L[0]*a1-L[0]**2)
-        if (z1 < h):
-            c1 = -c1
         R1 = [a1, b1, c1] #旋转关节R1
         theta1 = - math.degrees(math.atan2(R1[2], math.sqrt(R1[0]**2+R1[1]**2)-L[0])) # 舵机旋转角度theta1
 
@@ -95,8 +92,6 @@ class rrsrobot:
         a2 = (-D-math.sqrt(D**2-4*C*E))/(2*C)
         b2 = -math.sqrt(3)*a2
         c2 = math.sqrt(L[1]**2-4*a2**2-4*L[0]*a2-L[0]**2)
-        if (z2 < h):
-            c2 = -c2
         R2 = [a2, b2, c2] # 旋转关节R2
         theta2 = - math.degrees(math.atan2(R2[2], math.sqrt(R2[0]**2+R2[1]**2)-L[0]))
         thetas = [theta0, theta1, theta2]
