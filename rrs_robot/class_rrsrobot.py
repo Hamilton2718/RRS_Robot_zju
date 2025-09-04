@@ -114,7 +114,7 @@ class rrsrobot:
         y = r*math.sin(math.radians(theta))
         n = [x, y, z]
         angles = self.kinema_inv(n, h)
-        print(angles)
+        #print(angles)
         self.control.set_servo_angle(0, max(min(angles[0],-10.0),-75.0), interval=self.delay_time) # 设置舵机角度 极速模式
         self.control.set_servo_angle(1, max(min(angles[1],-10.0),-75.0), interval=self.delay_time) # 设置舵机角度 极速模式
         self.control.set_servo_angle(2, max(min(angles[2],-10.0),-75.0), interval=self.delay_time) # 设置舵机角度 极速模式

@@ -17,7 +17,7 @@ channels = 3
 image = np.zeros((height, width, channels), dtype=np.uint8)
 
 # PID系数
-K_PID = [0.01, 0.000, 0.005] #0.015, 0.0001, 0.0051
+K_PID = [0.03, 0.000, 0.0053] #0.015, 0.0001, 0.0051
 a = 1
 
 # 创建对象
@@ -99,8 +99,8 @@ try:
         if x != -1:
             theta, rho = pid.compute(goal, Current_value)
             pos = [theta, rho, pz_ini]
-            Robot.control_t_posture(pos, 0.02)
-        print(f"img_fps: {img_fps}, rob_fps: {rob_fps}")
+            Robot.control_t_posture(pos, 0.015)
+        print(f"img_fps: {img_fps}, rob_fps: {rob_fps}, Current_value: {Current_value}")
 
 finally:
     # Robot.clean_up()

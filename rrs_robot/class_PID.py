@@ -36,9 +36,9 @@ class PID:
         output_x = self.kp * error_x + self.ki * self.integral_x + self.kd * derivative_x
         output_y = self.kp * error_y + self.ki * self.integral_y + self.kd * derivative_y
         
-        if dist > 120:
-                output_x += self.kp * error_x * 0.5
-                output_y += self.kp * error_y * 0.5
+#        if dist > 120:
+#                output_x += self.kp * error_x * 0.5
+#                output_y += self.kp * error_y * 0.5
         # 卡尔曼滤波
         output_x = self.alpha * output_x + (1 - self.alpha) * self.last_output_x
         output_y = self.alpha * output_y + (1 - self.alpha) * self.last_output_y
